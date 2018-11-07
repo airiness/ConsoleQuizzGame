@@ -16,23 +16,28 @@ typedef struct
 	int y;
 } BEGINPOSITION;
 
-int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, string windowStyle);
+typedef struct
+{
+	string WindowFrameStyle;
+	short WindowColor;
+} WINDOWSTYLE;
+
+int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle);
 
 int main()
 {
 	HANDLE hWindow = GetStdHandle(STD_OUTPUT_HANDLE);
 	BEGINPOSITION welcomWindowBeginPosition = { 0,0 };
-	WINDOWSIZE welcomeWindow = { 30,20,1 };
-	string windowStyle = "Å°Å°";
-
-	makeWindow(hWindow, welcomWindowBeginPosition, welcomeWindow, windowStyle);
-
+	WINDOWSIZE welcomeWindowSize = { 30,20,1 };
+	WINDOWSTYLE welcomeWindowStyle = { "Åô",0xB };
+	makeWindow(hWindow, welcomWindowBeginPosition, welcomeWindowSize, welcomeWindowStyle);
+	cout << "what fuck with your head" << endl;
 	return 0;
 }
 
-int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, string windowStyle)
+int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle)
 {
-	int styleWide = windowStyle.length();
+	SetConsoleTextAttribute(hwindow, windowStyle.WindowColor);
 	COORD cursorPosition;
 	cursorPosition.X = bposition.x;
 	cursorPosition.Y = bposition.y;
@@ -40,11 +45,11 @@ int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, string
 	string leftAndRightLineWide = "";
 	for (size_t uplongi = 0; uplongi < wsize.x; uplongi++)
 	{
-		upLine += windowStyle;
+		upLine += windowStyle.WindowFrameStyle;
 	}
 	for (size_t uplongsize = 0; uplongsize < wsize.wide; uplongsize++)
 	{
-		leftAndRightLineWide += windowStyle;
+		leftAndRightLineWide += windowStyle.WindowFrameStyle;
 		SetConsoleCursorPosition(hwindow, cursorPosition);
 		cout << upLine;
 		cursorPosition.Y++;
@@ -55,7 +60,7 @@ int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, string
 		{
 			SetConsoleCursorPosition(hwindow, cursorPosition);
 			cout << leftAndRightLineWide;
-			cursorPosition.X += styleWide*(wsize.x - wsize.wide);
+			cursorPosition.X += windowStyle.WindowFrameStyle.length() * (wsize.x - wsize.wide);
 			SetConsoleCursorPosition(hwindow, cursorPosition);
 			cout << leftAndRightLineWide;
 			cursorPosition.X = bposition.x;
@@ -69,8 +74,10 @@ int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, string
 		cout << upLine;
 		cursorPosition.Y++;
 	}
-
-
+	cursorPosition.X = bposition.x + windowStyle.WindowFrameStyle.length() * wsize.wide;
+	cursorPosition.Y = bposition.y + wsize.wide;
+	SetConsoleCursorPosition(hwindow, cursorPosition);
+	SetConsoleTextAttribute(hwindow, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 
 	return 0;
 }
