@@ -2,7 +2,18 @@
 #include<iostream>
 #include<string>
 #include<vector>
+#include<fstream>
 using namespace std;
+
+enum INPUTCOMMAND
+{
+	UP = 72,
+	DOWN = 80,
+	LEFT = 75,
+	RIGHT = 77,
+	ENTER = 13,
+	ESC = 27,
+};
 
 typedef struct
 {
@@ -28,24 +39,88 @@ typedef struct
 	string Question;
 	vector<string> Anwsers;
 	int RightAnswer;
+	bool RightOrWrong;
 } QUIZZ;
+
+
 
 int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle);
 
 int main()
 {
+	//--read quizz
+	vector<QUIZZ> vQuizzs;
+
+	fstream fQuizz("quizz.txt");
+	if (!fQuizz.is_open())
+	{
+		cout << "oh holy smokes!";
+		getchar();
+		return 0;
+	}
+
+	while (!fQuizz.eof())
+	{
+
+	}
+
+
+
+
+
+
 	//--make the welcome window
 	auto hWindow = GetStdHandle(STD_OUTPUT_HANDLE);
-	BEGINPOSITION welcomWindowBeginPosition = { 0,0 };
-	WINDOWSIZE welcomeWindowSize = { 30,20,1 };
-	WINDOWSTYLE welcomeWindowStyle = { "™",0xB };
-	makeWindow(hWindow, welcomWindowBeginPosition, welcomeWindowSize, welcomeWindowStyle);
-	cout << "what fuck with your head" << endl;
+	CONSOLE_CURSOR_INFO cc_info;
+	cc_info.bVisible = 0;
+	cc_info.dwSize = 1;
+	SetConsoleCursorInfo(hWindow, &cc_info);
+
+	COORD MainCursorPosition = { 0,0 };
+
+	BEGINPOSITION MainWindowBeginPosition = { 10,5 };
+	WINDOWSIZE MainWindowSize = { 60,40,1 };
+	WINDOWSTYLE MainWindowStyle = { "¡",0xC };
+	makeWindow(hWindow, MainWindowBeginPosition, MainWindowSize, MainWindowStyle);
 	//----------------------
 
+	//--fill the text in welcome window
+	fstream fWelcomeText("welcomtext.txt");
+	if (!fWelcomeText.is_open())
+	{
+		cout << "oh holy smokes!";
+		getchar();
+		return 0;
+	}
+
+	BEGINPOSITION WelcomWindowBeginPosition = { 20,10 };
+	WINDOWSIZE WelcomeWindowSize = { 30,20,1 };
+	WINDOWSTYLE WelcomeWindowStyle = { "¡",0xB };
+	makeWindow(hWindow, WelcomWindowBeginPosition, WelcomeWindowSize, WelcomeWindowStyle);
+	MainCursorPosition.X = WelcomWindowBeginPosition.x + WelcomeWindowSize.wide;
+	MainCursorPosition.Y = WelcomWindowBeginPosition.y + WelcomeWindowSize.wide;
+
+
+	while (!fWelcomeText.eof())
+	{
+		string tempstring;
+		fWelcomeText >> tempstring;
+		cout << tempstring;
+		MainCursorPosition.X = WelcomWindowBeginPosition.x + WelcomeWindowSize.wide * WelcomeWindowStyle.WindowFrameStyle.length();
+		MainCursorPosition.Y++;
+		SetConsoleCursorPosition(hWindow, MainCursorPosition);
+	}
+
+	SetConsoleTextAttribute(hWindow, FOREGROUND_RED);
+	cout << "Press Any Button Go!";
+	getchar();
+	system("cls");
+	makeWindow(hWindow, MainWindowBeginPosition, MainWindowSize, MainWindowStyle);
+
+
+
+
 	vector<QUIZZ> QuizzesFromFile;
-
-
 
 	return 0;
 }
@@ -96,3 +171,4 @@ int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOW
 
 	return 0;
 }
+
