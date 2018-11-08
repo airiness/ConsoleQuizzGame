@@ -1,6 +1,7 @@
 #include<Windows.h>
 #include<iostream>
 #include<string>
+#include<vector>
 using namespace std;
 
 typedef struct
@@ -22,16 +23,30 @@ typedef struct
 	short WindowColor;
 } WINDOWSTYLE;
 
+typedef struct
+{
+	string Question;
+	vector<string> Anwsers;
+	int RightAnswer;
+} QUIZZ;
+
 int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle);
 
 int main()
 {
-	HANDLE hWindow = GetStdHandle(STD_OUTPUT_HANDLE);
+	//--make the welcome window
+	auto hWindow = GetStdHandle(STD_OUTPUT_HANDLE);
 	BEGINPOSITION welcomWindowBeginPosition = { 0,0 };
 	WINDOWSIZE welcomeWindowSize = { 30,20,1 };
 	WINDOWSTYLE welcomeWindowStyle = { "Åô",0xB };
 	makeWindow(hWindow, welcomWindowBeginPosition, welcomeWindowSize, welcomeWindowStyle);
 	cout << "what fuck with your head" << endl;
+	//----------------------
+
+	vector<QUIZZ> QuizzesFromFile;
+
+
+
 	return 0;
 }
 
