@@ -43,13 +43,14 @@ typedef struct
 	string Question;
 	vector<string> Anwsers;
 	int RightAnswer;
-	bool RightOrWrong;
+	int InputedAnswer;
 } QUIZZ;
 
 
 int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle);
 int showQuestion(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle, string question);
 void showList(HANDLE hwindow, vector<string> list, int index, BEGINPOSITION bposition, WINDOWSIZE wsize);
+int showResult(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle, vector<int> result);
 int getinput(int * index, int indexsize);
 
 
@@ -68,14 +69,14 @@ int main()
 		return 0;
 	}
 
-	for (auto iter = vQuizzs.begin(); iter !=vQuizzs.end(); iter++)
+	for (auto iter = vQuizzs.begin(); iter != vQuizzs.end(); iter++)
 	{
 		if (fQuizz.eof())
 		{
 			break;
 		}
 		fQuizz >> iter->Question;
-		for (auto j=0;j<3;j++)
+		for (auto j = 0; j < 3; j++)
 		{
 			string tmp;
 			fQuizz >> tmp;
@@ -136,9 +137,17 @@ int main()
 	system("cls");
 
 	//--begin show the quizzs
-	auto index = 0;
+	vector<int> vResultPoint;
+
+	BEGINPOSITION ResultWindowBeginPosition = { 40,20 };
+	WINDOWSIZE ResulteWindowSize = { 6,3,1 };
+	WINDOWSTYLE ResultWindowStyle = { "☆",0xB };
+
+
 	for (auto iter = vQuizzs.begin(); iter != vQuizzs.end(); iter++)
 	{
+		auto index = 0;
+		auto result = 0;
 		makeWindow(hWindow, MainWindowBeginPosition, MainWindowSize, MainWindowStyle);
 		//show question
 		showQuestion(hWindow, MainWindowBeginPosition, MainWindowSize, MainWindowStyle, iter->Question);
@@ -146,18 +155,36 @@ int main()
 		while (true)
 		{
 			showList(hWindow, iter->Anwsers, index, MainWindowBeginPosition, MainWindowSize);
-			getinput(&index, iter->Anwsers.size());
+			result = getinput(&index, iter->Anwsers.size());
+			if (result == ENTER)
+			{
+				makeWindow(hWindow, ResultWindowBeginPosition, ResulteWindowSize, ResultWindowStyle);
 
+				iter->InputedAnswer = index + 1;
+				if (iter->InputedAnswer == iter->RightAnswer)
+				{
+					cout << "正解！";
+					vResultPoint.push_back(1);
+				}
+				else
+				{
+					cout << "残念！";
+					vResultPoint.push_back(0);
+				}
+				Sleep(1500);
+				system("cls");
+				break;
+			}
 		}
 	}
 
+	makeWindow(hWindow, MainWindowBeginPosition, MainWindowSize, MainWindowStyle);
+	showResult(hWindow, MainWindowBeginPosition, MainWindowSize, MainWindowStyle, vResultPoint);
 
-
-
-	vector<QUIZZ> QuizzesFromFile;
-
+	getchar();
 	return 0;
 }
+
 
 int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle)
 {
@@ -206,7 +233,37 @@ int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOW
 	return 0;
 }
 
-int showQuestion(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle,string question)
+int showResult(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle, vector<int> result)
+{
+	COORD cursorPosition;
+	cursorPosition.X = bposition.x + wsize.wide * windowStyle.WindowFrameStyle.length();
+	cursorPosition.Y = bposition.y + wsize.wide;
+	SetConsoleCursorPosition(hwindow, cursorPosition);
+	SetConsoleTextAttribute(hwindow, 0xB);
+	int point = 0;
+	int num = 0;
+	for (auto i = result.begin(); i!=result.end(); i++)
+	{
+		num++;
+		if (*i==1)
+		{
+			cout << "第"<< num <<"問:RIGHT!";
+			point++;
+		}
+		else
+		{
+			cout << "第"<< num <<"問:WRONG!";
+		}
+		cursorPosition.X = bposition.x + wsize.wide * windowStyle.WindowFrameStyle.length();
+		cursorPosition.Y++;
+		SetConsoleCursorPosition(hwindow, cursorPosition);
+
+	}
+	cout << "得点:" << point<<"!";
+	return point;
+}
+
+int showQuestion(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle, string question)
 {
 	COORD cursorPosition;
 	cursorPosition.X = bposition.x + wsize.wide * windowStyle.WindowFrameStyle.length();
@@ -220,21 +277,19 @@ int showQuestion(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WIND
 		cursorPosition.Y++;
 		SetConsoleCursorPosition(hwindow, cursorPosition);
 	}
-	else 
+	else
 	{
-		vector<string> divideQuestion;
 		int snum = question.length() / (wsize.x - 2 * wsize.wide * windowStyle.WindowFrameStyle.length());
 		int lostnum = question.length() % (wsize.x - 2 * wsize.wide * windowStyle.WindowFrameStyle.length());
 		for (size_t i = 0; i < snum; i++)
 		{
-			string tmp(question.substr(i * (wsize.x - 2 * wsize.wide * windowStyle.WindowFrameStyle.length(), (i + 1)*(wsize.x - 2 * wsize.wide * windowStyle.WindowFrameStyle.length()))));
-			//divideQuestion.push_back(tmp);
-			cout << tmp;
+			cout << question.substr(i * (wsize.x - 2 * wsize.wide * windowStyle.WindowFrameStyle.length()), wsize.x - 2 * wsize.wide * windowStyle.WindowFrameStyle.length());
+
 			cursorPosition.X = bposition.x + wsize.wide * windowStyle.WindowFrameStyle.length();
 			cursorPosition.Y++;
 			SetConsoleCursorPosition(hwindow, cursorPosition);
 		}
-		if (lostnum!=0)
+		if (lostnum != 0)
 		{
 			string tmp(question.substr((snum * (wsize.x - 2 * wsize.wide * windowStyle.WindowFrameStyle.length())) - 1, lostnum));
 			cout << tmp;
@@ -252,16 +307,16 @@ void showList(HANDLE hwindow, vector<string> list, int index, BEGINPOSITION bpos
 {
 	COORD cursorPosition;
 	SetConsoleTextAttribute(hwindow, FOREGROUND_GREEN | 0x8);
-	cursorPosition.X = bposition.x + wsize.x /3;
-	cursorPosition.Y = bposition.y + 3;
+	cursorPosition.X = bposition.x + wsize.x / 3;
+	cursorPosition.Y = bposition.y + 6;
 	SetConsoleCursorPosition(hwindow, cursorPosition);
-	for (auto i = 0; i<list.size(); i++)
+	for (auto i = 0; i < list.size(); i++)
 	{
 		if (i == index)//もし選んだら、赤になる
 		{
 			SetConsoleTextAttribute(hwindow, FOREGROUND_RED | 0x8);
 			cursorPosition.X = bposition.x + wsize.x / 3;
-			cursorPosition.Y ++;
+			cursorPosition.Y++;
 			SetConsoleCursorPosition(hwindow, cursorPosition);
 			cout << list[i];
 		}
@@ -276,7 +331,7 @@ void showList(HANDLE hwindow, vector<string> list, int index, BEGINPOSITION bpos
 	}
 }
 
-int getinput(int * index,int indexsize)
+int getinput(int * index, int indexsize)
 {
 	int ch;
 	ch = _getch();
