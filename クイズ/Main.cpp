@@ -6,8 +6,8 @@
 #include<fstream>
 using namespace std;
 
-const auto quizznum = 10;
-const auto answernum = 3;
+const auto quizznum = 10;//クイズ数量
+const auto answernum = 3;//選択の数量
 
 enum INPUTCOMMAND
 {
@@ -19,6 +19,7 @@ enum INPUTCOMMAND
 	ESC = 27,
 };
 
+//windowのサイズ
 typedef struct
 {
 	int x;
@@ -26,18 +27,21 @@ typedef struct
 	int wide;
 } WINDOWSIZE;
 
+//Windowsのposition
 typedef struct
 {
 	int x;
 	int y;
 } BEGINPOSITION;
 
+//Windowsの形
 typedef struct
 {
 	string WindowFrameStyle;
 	short WindowColor;
 } WINDOWSTYLE;
 
+//クイズを保存配列
 typedef struct
 {
 	string Question;
@@ -46,21 +50,27 @@ typedef struct
 	int InputedAnswer;
 } QUIZZ;
 
-
+//windowを作る
 int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle);
+//クイズの問題を表す
 int showQuestion(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle, string question);
+//クイズの選択肢を表す
 void showList(HANDLE hwindow, vector<string> list, int index, BEGINPOSITION bposition, WINDOWSIZE wsize);
+//正解とか表す
 int showResult(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle, vector<int> result);
+//入力を取る
 int getinput(int * index, int indexsize);
 
 
 int main()
 {
+	//set the console size
 	system("mode con cols=143 lines=50  ");
 	system("CLS");
 	//--read quizz
 	vector<QUIZZ> vQuizzs(quizznum);
 
+	//open the quizz file
 	fstream fQuizz("quizz.txt");
 	if (!fQuizz.is_open())
 	{
@@ -95,7 +105,7 @@ int main()
 	SetConsoleCursorInfo(hWindow, &cc_info);
 
 	COORD MainCursorPosition = { 0,0 };
-
+	//make the main window
 	BEGINPOSITION MainWindowBeginPosition = { 10,5 };
 	WINDOWSIZE MainWindowSize = { 60,40,1 };
 	WINDOWSTYLE MainWindowStyle = { "■",0xC };
@@ -158,20 +168,21 @@ int main()
 			result = getinput(&index, iter->Anwsers.size());
 			if (result == ENTER)
 			{
-				makeWindow(hWindow, ResultWindowBeginPosition, ResulteWindowSize, ResultWindowStyle);
+				//makeWindow(hWindow, ResultWindowBeginPosition, ResulteWindowSize, ResultWindowStyle);
 
 				iter->InputedAnswer = index + 1;
 				if (iter->InputedAnswer == iter->RightAnswer)
 				{
-					cout << "正解！";
+					//cout << "正解！";
 					vResultPoint.push_back(1);
 				}
 				else
 				{
-					cout << "残念！";
+					//cout << "残念！";
 					vResultPoint.push_back(0);
 				}
-				Sleep(1500);
+				//Sleep(1500);
+				//rewind("stdin");
 				system("cls");
 				break;
 			}
@@ -185,7 +196,7 @@ int main()
 	return 0;
 }
 
-
+//make the window by position size type
 int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle)
 {
 	SetConsoleTextAttribute(hwindow, windowStyle.WindowColor);
@@ -235,6 +246,7 @@ int makeWindow(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOW
 
 int showResult(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle, vector<int> result)
 {
+	ofstream fresuilt("result.txt");
 	COORD cursorPosition;
 	cursorPosition.X = bposition.x + wsize.wide * windowStyle.WindowFrameStyle.length();
 	cursorPosition.Y = bposition.y + wsize.wide;
@@ -248,11 +260,13 @@ int showResult(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOW
 		if (*i==1)
 		{
 			cout << "第"<< num <<"問:RIGHT!";
+			fresuilt << "第" << num << "問:RIGHT!" << endl;
 			point++;
 		}
 		else
 		{
 			cout << "第"<< num <<"問:WRONG!";
+			fresuilt << "第" << num << "問:WRONG!" << endl;
 		}
 		cursorPosition.X = bposition.x + wsize.wide * windowStyle.WindowFrameStyle.length();
 		cursorPosition.Y++;
@@ -260,9 +274,11 @@ int showResult(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOW
 
 	}
 	cout << "得点:" << point<<"!";
+	fresuilt << "得点:" << point<<"!";
 	return point;
 }
 
+//問題の文字を表す
 int showQuestion(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WINDOWSTYLE windowStyle, string question)
 {
 	COORD cursorPosition;
@@ -270,7 +286,7 @@ int showQuestion(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WIND
 	cursorPosition.Y = bposition.y + wsize.wide;
 	SetConsoleCursorPosition(hwindow, cursorPosition);
 	SetConsoleTextAttribute(hwindow, 0xB);
-	if (question.length() < wsize.x - 2 * wsize.wide * windowStyle.WindowFrameStyle.length())
+	if (question.length() < 2*(wsize.x - 2 * wsize.wide * windowStyle.WindowFrameStyle.length()))
 	{
 		cout << question;
 		cursorPosition.X = bposition.x + wsize.wide * windowStyle.WindowFrameStyle.length();
@@ -303,6 +319,7 @@ int showQuestion(HANDLE hwindow, BEGINPOSITION bposition, WINDOWSIZE wsize, WIND
 	return 0;
 }
 
+//選択肢を表す
 void showList(HANDLE hwindow, vector<string> list, int index, BEGINPOSITION bposition, WINDOWSIZE wsize)
 {
 	COORD cursorPosition;
@@ -331,6 +348,7 @@ void showList(HANDLE hwindow, vector<string> list, int index, BEGINPOSITION bpos
 	}
 }
 
+//input を取る関数
 int getinput(int * index, int indexsize)
 {
 	int ch;
