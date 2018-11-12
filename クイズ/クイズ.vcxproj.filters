@@ -19,4 +19,15 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="quizz.txt">
+      <Filter>リソース ファイル</Filter>
+    </Text>
+    <Text Include="result.txt">
+      <Filter>リソース ファイル</Filter>
+    </Text>
+    <Text Include="welcomtext.txt">
+      <Filter>リソース ファイル</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
